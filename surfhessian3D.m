@@ -6,23 +6,24 @@ function [gridofhessians] = surfhessian3D( J, filtersize )
 %
 % INPUTS
 % J: the integral image of the volume.
-% filtersize: the integer side length of the cube filter.
+% filtersize: the integer side length of the cube filter used to
+% approximate H.
 % 
 % OUTPUTS
 % gridofhessians: a cell of hessians at calculatable points in the volume.
 % Hessian matrix elements are in this order: D11, D22, D33, D12, D23, D13.
 %
-% NOTESgit 
+% NOTES
 % A calculateable point is one that does not overlap the edges of the
 % volume.
-% ------------------------------------------------------------------------
+%% -----------------------------------------------------------------------
 
 % The filter size must be multiple of 3 and greater than 8 in size.
 assert( mod(filtersize, 3) == 0 && filtersize >= 9 );
 
-% Setup and output cell.
+% Setup output cell. J is 1 larger than V;
 [x,y,z] = size(J);
-x0 = x-1; y0 = y-1; z0 = z-1; % J is 1 larger than V;
+x0 = x-1; y0 = y-1; z0 = z-1; 
 
 % Generate the boxpositions for each of the two types of filters
 filter11 = makefilter11(filtersize);

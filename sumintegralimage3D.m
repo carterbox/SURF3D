@@ -13,7 +13,7 @@ function [T] = sumintegralimage3D(corner,boxsize,J)
 %
 % NOTES:
 % http://en.wikipedia.org/wiki/Summed_area_table
-% ------------------------------------------------------------------------
+%% -----------------------------------------------------------------------
 
 % Check for 3D vectors.
 assert(length(corner) == 3 && length(boxsize) == 3);
