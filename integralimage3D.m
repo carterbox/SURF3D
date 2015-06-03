@@ -1,4 +1,4 @@
-function [J] = integralImage3D(V)
+function [J] = integralimage3D(V)
 % INTEGRALIMAGE3D computes the integral image of a 3D volume. Which is an array
 % whose indecies contain the sum of all the intensities in the original image
 % that are above and to the left. This one is inclusive and 1 indexed.
