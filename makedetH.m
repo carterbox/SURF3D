@@ -14,6 +14,9 @@ function [detHgrid] = makedetH(J, filtersize)
 % We take the absolute value of the det(H) because in three dimensions
 % saddle points can also be detected. [Knopp et al. "Hough Transforms and 3D
 % SURF for robust trhee dimenstional classification" pg. 4]
+% We were supposed to normalize the determinatnt of the approximate Hessian
+% we calculated by using a weight factor calculated from ratios of
+% Frobenius norms, but we didn't because that was complicated. Maybe later.
 %% -----------------------------------------------------------------------
 
 % First, approximate the Hessian matricies for all calculatable points in
