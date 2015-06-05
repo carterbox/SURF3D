@@ -18,12 +18,12 @@ function [maximums] = nonmaximumsupression(A, nbhood)
 
 % Pad the array so that its dimensions are a multiples of 2n+1.
 % TODO: throw a warning instead of asserting and pad neighborhood with 1s.
-assert(ndims(A) == ndims(nbhood),...
+assert(ndims(A) == length(nbhood),...
     'The dimensions of NBHOOD does not match A.');
 if(iscolumn(nbhood)), nbhood = nbhood'; end;
 arraysize0  = size(A);
 remainders = rem(arraysize0,2.*nbhood+1);
-A = padarray(A,remainders,'post'); % Post pad to avoid reindexing at the end.
+A = padarray(A,2.*nbhood+1-remainders,'post'); % Post pad to avoid reindexing at the end.
 arraysize = size(A);
 assert(sum(rem(arraysize,2.*nbhood+1)) == 0);
 
@@ -35,33 +35,41 @@ for i = 1:ndims(A);
 end
 
 % Create a grid from these spaced indecies.
-[X{1},X{2},X{3},X{4}] = ndgrid(p{1},p{2},p{3},{4}); clear('p');
+[X{1},X{2},X{3},X{4}] = ndgrid(p{1},p{2},p{3},p{4}); clear('p');
 num_nbhoods = numel(X{1});
-for j = 1:4, X{i} = reshape(X{i}, [num_nbhoods,1]); end
+for i = 1:4, X{i} = reshape(X{i}, [num_nbhoods,1]); end
 X_ = cat(2,X{1},X{2},X{3},X{4}); clear('X');
 
 % Break A into uniformly spaced neighborhoods 2n+1^dim and find the location of the
 % partial maximum in each neighborhoods.
 % TODO: Explicitly divide A so it is not a broadcast variable.
-pmaxlist = partialmaximum(X_,A,nbhood);
+pmax_list = partialmaximum(X_,A,nbhood);
 
 % Then make sure none of these partial maximums are within the critical
 % 2n+1 of each other.
-maximums = findneighbors(pmaxlist, nbhood);
+maximums = findneighbors(pmax_list, nbhood);
 
 end
 
 %% Helper Functions ------------------------------------------------------
 
-function [pmax] = partialmaximum(X,A,nbhood)
-% PARTIALMAXIMUM
+function [pmax_list] = partialmaximum(X,A,nbhood)
+% PARTIALMAXIMUM calculates the partial maximum for NBHOOD around X in A.
 %
 % INPUTS
-% X: an array
+% X: an array of the centers of all the neighborhoods to calculate partial
+% maxima for.
+% A: the array of data where we are searching for peaks.
+% nbhood: a row vector denoting the size of the neighborhoods. Radii not
+% diameters.
+%
+% OUTPUTS
+% pmax_list: a Nx5 array of partial maximums where the first 4 columns are
+% coordinates and the last column is the magnitude of a partial maximum.  
 %% -----------------------------------------------------------------------
 
 % Preallocate an output array.
-pmax = zeros(size(X,1),size(X,2)+1);
+pmax_list = zeros(size(X,1),size(X,2)+1);
 
 % Carve out the region around the points in X and find the max in each.
 % Record its location and magnitude.
@@ -72,12 +80,12 @@ parfor k = 1:size(X,1)
     end
     thisregion = A(range{1},range{2},range{3},range{4});
     
-    index = zeros(4,1);
-    [magnitude, index(1)] = max(thisregion);
-    [index(1),index(2),index(3),index(4)] = ind2sub(nbhood,index);
+    index = zeros(1,4);
+    [magnitude, index(1)] = max(thisregion(:));
+    [index(1),index(2),index(3),index(4)] = ind2sub(size(thisregion),index(1));
     index = X(k,:) + index - nbhood - 1;
     
-    pmax(k,:) = [index, magnitude];
+    pmax_list(k,:) = [index, magnitude];
 end
 
 end
@@ -101,28 +109,32 @@ function [maximums] = findneighbors(pmax_list, nbhood)
 
 % Search a KDtree for neighbors
 tree = KDTreeSearcher(pmax_list(:,1:4));
-radius = 2*average(nbhood)+1;
+radius = 2*mean(nbhood)+1;
 matches = rangesearch(tree, pmax_list(:,1:4),radius);
 
 % Remove points with matches that are larger.
 pmax_mags = pmax_list(:,5);
 is_peak = ones(size(pmax_list,1),1);
 parfor i = 1:size(pmax_list,1)
-   % Compare each point with it's matches. No matches have length 0.
-   for j = 1:length(matches{i})
-       % Mark the point if you find a match with a higher value.
-       if(pmax_mags(i) < pmax_mags(matches{i}(j)))
-           is_peak(i) = 0;
-           break;
-       end
+   % Compare each point with it's matches. No matches have length 0, and we
+   % don't want peaks at zero.
+   if(pmax_mags(i) == 0)
+       is_peak(i) = 0;
+   else for j = 1:length(matches{i})
+           % Mark the point if you find a match with a higher value.
+           if(pmax_mags(i) < pmax_mags(matches{i}(j)))
+               is_peak(i) = 0;
+               break;
+           end
+        end
    end
 end
 
 % Sort by magnitude and get rid of nonpeaks.
 num_peaks = sum(is_peak);
 pmax_list(:,5) = pmax_list(:,5).*is_peak;
-pmax_list = sortrows(pmax_list, 5);
-maximums = pmax_list(1:num_peaks);
+pmax_list = sortrows(pmax_list, -5);
+maximums = pmax_list(1:num_peaks,:,:,:,:);
 end
 
 function [X] = generategrid(p)
