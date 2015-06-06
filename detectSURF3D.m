@@ -14,7 +14,7 @@ function [points] = detectSURF3D(V)
 %% -----------------------------------------------------------------------
 
 koctaves = 2; nbhood = [1,1,1,1];
-octaves = {[9,15,21,27],[15,27,39,51],[27,51,75,99],[51,99,147,195]};
+octaves = {[15,21,27,33,39,45],[39,51,63,75,87,99],[27,51,75,99],[51,99,147,195]};
 J = integralimage3D(V);
 
 %% Calculate the responses from the Hessian based detector
@@ -25,7 +25,10 @@ for scale = octaves{i}
     % Check to see if this scale has already been computed.
     if(length(R) < scale || isempty(R{scale}))
        fprintf(1, ' %i', scale);
-       R{scale} = makedetH(J, scale);
+       temp = makedetH(J, scale);
+       %load(sprintf('Rscale%02i.mat',scale),'temp');
+       save(sprintf('Rscale%02i.mat',scale),'temp');
+       R{scale} = temp;
     else
        fprintf(1, ' X');
     end
@@ -46,14 +49,14 @@ for i = 1:koctaves
     
     % Interpolate responses in scale space in order to find response maxima.
     fprintf(1, ' refining peaks... ');
-    maxima{i} = refinepeaks(maxima{i},A,d,octaves{i});
+    maxima{i} = refinepeaks(maxima{i},A,4,octaves{i});
     fprintf(' DONE.');
 end
 
 %% Combine all the results and put strongest responses first.
 points = maxima{1};
-for i = 2:length{maxima}, points = cat(1,points,maxima{i}); end
+for i = 2:length(maxima), points = cat(1,points,maxima{i}); end
 points = sortrows(points, -5); % reponse magnitude is col 5.
 
-fprintf(1,'\nSUCCCESS');
+fprintf(1,'\nSUCCCESS\n');
 end
