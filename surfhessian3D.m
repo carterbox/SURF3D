@@ -23,7 +23,7 @@ function [gridofhessians] = surfhessian3D(J, filtersize)
 % The filter size must be multiple of 3 and greater than 8 in size.
 assert( mod(filtersize, 3) == 0 && filtersize >= 9 );
 
-fspacing = 2;
+fspacing = 1;
 
 % Setup output cell. J is 1 larger than V;
 [x,y,z] = size(J);

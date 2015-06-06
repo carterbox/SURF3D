@@ -12,17 +12,15 @@ function [points] = detectSURF3D(V)
 % The SURF implementation in 2D expands the image 
 % [citations here]
 %% -----------------------------------------------------------------------
-%V = 0;
-koctaves = 2;
+
+koctaves = 2; nbhood = [1,1,1,1];
 octaves = {[9,15,21,27],[15,27,39,51],[27,51,75,99],[51,99,147,195]};
 J = integralimage3D(V);
-[x0,y0,z0] = size(V);
 
-% Calculate the responses from the Hessian based detector at all the scales
-% and store the results in cell R.
-R = cell(9,1);
+%% Calculate the responses from the Hessian based detector
+R = cell(9,1); % Store the results in cell R.
 for i = 1:koctaves
-    fprintf(1, 'Calculating Hessians for scales...');
+    fprintf(1, '\nCalculating Hessians for scales...');
 for scale = octaves{i}
     % Check to see if this scale has already been computed.
     if(length(R) < scale || isempty(R{scale}))
@@ -32,16 +30,30 @@ for scale = octaves{i}
        fprintf(1, ' X');
     end
 end
-fprintf(' DONE.\n');
+fprintf(' DONE.');
 end
 
-% Perform non-maxima supression using a 3x3x3x3 bounding box
+clear('J');
+%% Perform non-maxima supression using a 2*nbhood+1 bounding box
+fprintf(1, '\nSupressing non-maxima in octaves...');
+maxima = cell(koctaves,1);
+for i = 1:koctaves
+    fprintf(1, '\n%i', i);
+    % Concat all the detector responses from the octave
+    A = R{octaves{i}(1)};
+    for j = octaves{i}(2:end), A = cat(4,A,R{j}); end
+    maxima{i} = nonmaximumsupression(A,nbhood);
+    
+    % Interpolate responses in scale space in order to find response maxima.
+    fprintf(1, ' refining peaks... ');
+    maxima{i} = refinepeaks(maxima{i},A,d,octaves{i});
+    fprintf(' DONE.');
+end
 
-% Interpolate responses in scale space in order to find response maxima.
+%% Combine all the results and put strongest responses first.
+points = maxima{1};
+for i = 2:length{maxima}, points = cat(1,points,maxima{i}); end
+points = sortrows(points, -5); % reponse magnitude is col 5.
 
-
-
-
-
-
+fprintf(1,'\nSUCCCESS');
 end
