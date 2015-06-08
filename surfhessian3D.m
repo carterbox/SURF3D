@@ -1,4 +1,4 @@
-function [gridofhessians] = surfhessian3D( J, filtersize )
+function [gridofhessians] = surfhessian3D(J, filtersize)
 % SURFHESSIAN3D approximates the hessian matrix by using box filters as
 % described in the SURF paper by H Bay, A Ess, T Tuytelaars, and L Van Gool
 % in 2008. Returns a grid of hessians for each calculatable point in the
@@ -6,38 +6,43 @@ function [gridofhessians] = surfhessian3D( J, filtersize )
 %
 % INPUTS
 % J: the integral image of the volume.
-% filtersize: the integer side length of the cube filter.
+% filtersize: the integer side length of the cube filter used to
+% approximate H.
+% fspacing: space between points where the filter is applied. i.e. the
+% inverse sampling rate.
 % 
 % OUTPUTS
 % gridofhessians: a cell of hessians at calculatable points in the volume.
 % Hessian matrix elements are in this order: D11, D22, D33, D12, D23, D13.
 %
-% NOTESgit 
+% NOTES
 % A calculateable point is one that does not overlap the edges of the
 % volume.
-% ------------------------------------------------------------------------
+%% -----------------------------------------------------------------------
 
 % The filter size must be multiple of 3 and greater than 8 in size.
 assert( mod(filtersize, 3) == 0 && filtersize >= 9 );
 
-% Setup and output cell.
+fspacing = 1;
+
+% Setup output cell. J is 1 larger than V;
 [x,y,z] = size(J);
-x0 = x-1; y0 = y-1; z0 = z-1; % J is 1 larger than V;
+x0 = x-1; y0 = y-1; z0 = z-1; 
 
 % Generate the boxpositions for each of the two types of filters
 filter11 = makefilter11(filtersize);
 filter12 = makefilter12(filtersize);
 
 % Generate a list of all the places to apply the filter.
-% Ignore points around the edges where the filter will give bad results. 
+% Ignore points around the edges where the filter will give bad results.
 buffer = (filtersize - 1)/2;
-[X,Y,Z] = meshgrid(1+buffer:x0-buffer,...
-                   1+buffer:y0-buffer,...
-                   1+buffer:z0-buffer);
-               
+[X,Y,Z] = meshgrid(1+buffer:fspacing:x0-buffer,...
+                   1+buffer:fspacing:y0-buffer,...
+                   1+buffer:fspacing:z0-buffer);
+tic            
 tempgrid = cell(numel(X),1);
 parfor k = 1:numel(X)
-    tic
+    %tic
     center = [X(k),Y(k),Z(k)];
     H = zeros(6,1);
 % Calculate each of the terms of the Hessian.
@@ -59,7 +64,7 @@ parfor k = 1:numel(X)
             m = m + 3;
         end
     end
-    toc
+    %toc
     tempgrid{k} = H;
     %gridofhessians{center(1), center(2), center(3)} = H;
 end
@@ -128,13 +133,13 @@ function [boxpositions] = makefilter12(filter_size)
 l0 = filter_size/3;
 
 % Calcculate the size of each box.
-boxsize = [l0, l0, 2*l0-1];
+boxsize = [l0, l0, 2*l0+1];
 
 % Calculate the corner coordinates for each of boxes.
-box0 = [-l0, 1,   0];
-box1 = [-l0, -l0, 0];
-box2 = [ 1,  1,   0];
-box3 = [ 1,  -l0, 0];
+box0 = [-l0, 1,   -l0];
+box1 = [-l0, -l0, -l0];
+box2 = [ 1,  1,   -l0];
+box3 = [ 1,  -l0, -l0];
 
 % Assign multipliers and put into a cell.
 boxpositions = {1, box0, boxsize,...
