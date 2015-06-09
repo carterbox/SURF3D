@@ -1,8 +1,8 @@
 function [gridofhessians] = surfhessian3D(J, filtersize)
 % SURFHESSIAN3D approximates the hessian matrix by using box filters as
 % described in the SURF paper by H Bay, A Ess, T Tuytelaars, and L Van Gool
-% in 2008. Returns a grid of hessians for each calculatable point in the
-% volume.
+% back in 2008 but in 3D! Returns a grid of hessians for each calculatable
+% point in the volume.
 %
 % INPUTS
 % J: the integral image of the volume.
