@@ -1,4 +1,4 @@
-function [V2] = markkeypoints( V0, points )
+function [V3] = markkeypoints( V0, points )
 %MARKKEYPOINTS marks the POINTS with circles in the volume V0.
 %   Points are marked with circles that are the radius of the scale of the
 %   detected key point.
@@ -19,7 +19,7 @@ function [V2] = markkeypoints( V0, points )
 % the list of points into groups by slice.
 %% -----------------------------------------------------------------------
 tic
-%points = int32(points(1:floor(end/10),1:4));
+points = int32(points(1:floor(end/10),1:4));
 
 % We have to convert the images to color in order to draw the circles so
 % to do that each location needs a pixel depth of three. To do that we make
@@ -37,16 +37,17 @@ end
 color = uint8([0 0 255]); % It's blue.
 shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom','CustomBorderColor',color);
 
+V3 = cell(3,1);
 for direction = 1:3
     % Sort the points so we can draw circles on the same slice at the
     % same time.
     points = sortrows(points,direction);
-    V1 = shiftdim(V1,1);
+    V1_ = shiftdim(V1,1);
     
     start_point = 1;
     end_point = 2; % [start:end) the range of points we are going to draw.
     i_slice = 1; % The slice that we are trying to draw on.
-    while(start_point <= size(points,1) && i_slice <= size(V1,direction))
+    while(start_point <= size(points,1) && i_slice <= size(V1_,direction))
         % Determine if there are any circles on this slice.
         if(points(start_point,3) == i_slice)
             % Find all the points on this slice.
@@ -56,7 +57,7 @@ for direction = 1:3
             this_points = points(start_point:end_point-1,1:4); 
                         
             % Convert slice into an RGB image.
-            slice = cell2mat(V1(:,:,i_slice));
+            slice = cell2mat(V1_(:,:,i_slice));
             
             % Define the circles to be drawn.
             r = this_points(:,4);
@@ -67,19 +68,27 @@ for direction = 1:3
             slice = step(shapeInserter, slice, circles);
         
             % Convert slice back into cell and copy it back to V1.
-            V1(:,:,i_slice) = num2cell(slice,3);
+            V1_(:,:,i_slice) = num2cell(slice,3);
             
             start_point = end_point;
         end
         i_slice = i_slice + 1; 
     end
+    
+    % Convert to a stack of color images.
+    V2 = cell(size(V1_,3),1);
+    for i = 1:size(V1_,3)
+        V2{i} = cell2mat(V1_(:,:,i));
+    end
+    
+    V3{direction} = V2;
 end
 
-% Convert to a stack of color images.
-V2 = cell(size(V1,3),1);
-for i = 1:size(V1,3)
-    V2{i} = cell2mat(V1(:,:,i));
-end
+
 toc
+
+imstacksave(V3{3},'./circles/3','divided');
+imstacksave(V3{2},'./circles/2','divided');
+imstacksave(V3{1},'./circles/1','divided');
 end
 
