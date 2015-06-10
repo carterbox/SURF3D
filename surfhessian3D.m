@@ -1,8 +1,6 @@
 function [gridofhessians] = surfhessian3D(J, filtersize)
-% SURFHESSIAN3D approximates the hessian matrix by using box filters as
-% described in the SURF paper by H Bay, A Ess, T Tuytelaars, and L Van Gool
-% back in 2008 but in 3D! Returns a grid of hessians for each calculatable
-% point in the volume.
+% SURFHESSIAN3D approximates the hessian matrix by using box filters in 3D.
+% Returns a grid of hessians for each calculatable point in the volume.
 %
 % INPUTS
 % J: the integral image of the volume.
@@ -18,50 +16,51 @@ function [gridofhessians] = surfhessian3D(J, filtersize)
 % NOTES
 % A calculateable point is one that does not overlap the edges of the
 % volume.
+% [H Bay, A Ess, T Tuytelaars, and L Van Gool. "Speeded Up Robust Features"
+% 2008]
 %% -----------------------------------------------------------------------
 
 % The filter size must be multiple of 3 and greater than 8 in size.
 assert( mod(filtersize, 3) == 0 && filtersize >= 9 );
 
-fspacing = 1;
-
 % Setup output cell. J is 1 larger than V;
 [x,y,z] = size(J);
 x0 = x-1; y0 = y-1; z0 = z-1; 
 
-% Generate the boxpositions for each of the two types of filters
+% Generate the boxpositions for each of the two types of filters.
 filter11 = makefilter11(filtersize);
 filter12 = makefilter12(filtersize);
 
 % Generate a list of all the places to apply the filter.
 % Ignore points around the edges where the filter will give bad results.
+fspacing = 1;
 buffer = (filtersize - 1)/2;
-[X,Y,Z] = meshgrid(1+buffer:fspacing:x0-buffer,...
+[X,Y,Z] = ndgrid(1+buffer:fspacing:x0-buffer,...
                    1+buffer:fspacing:y0-buffer,...
                    1+buffer:fspacing:z0-buffer);
-tic            
+tic
 tempgrid = cell(numel(X),1);
 parfor k = 1:numel(X)
     %tic
     center = [X(k),Y(k),Z(k)];
+    % Calculate each of the 6 terms of the Hessian.
     H = zeros(6,1);
-% Calculate each of the terms of the Hessian.
     for j = 1:3
         % TODO: Move this space rotation outside the loop or make 3
         % separate filters to speed up the loop by an order of magnitude.
-        J0 = shiftdim(J,j-1); % Rotate the space instead of the filter.
+        rotatedJ = shiftdim(J,j-1); % Rotate the space instead of the filter.
 
         i = 1; % Calculate the main diagonal of the Hessian.
         while (i < length(filter11))
             H(j) = H(j) + filter11{i}.*sumintegralimage3D(...
-                          filter11{i+1} + center, filter11{i+2}, J0);
+                          filter11{i+1} + center, filter11{i+2}, rotatedJ);
             i = i + 3;
         end
-        m = 1; % Calculate the off terms of the Hessian.
-        while (m < length(filter12))
-            H(j+3) = H(j+3) + filter12{m}.*sumintegralimage3D(...
-                              filter12{m+1} + center, filter12{m+2}, J0);
-            m = m + 3;
+        h = 1; % Calculate the off terms of the Hessian.
+        while (h < length(filter12))
+            H(j+3) = H(j+3) + filter12{h}.*sumintegralimage3D(...
+                              filter12{h+1} + center, filter12{h+2}, rotatedJ);
+            h = h + 3;
         end
     end
     %toc
@@ -70,13 +69,14 @@ parfor k = 1:numel(X)
 end
 
 % TODO: Figure out if we can just reshape tempgrid instead of copying the
-% elements manually.
+% elements manually. SOLVED: You can if you use ndgrid instead of
+% meshgrid. (Meshgrid swaps the u1 and u2 coordinates) and if (X,Y,Z)
+% samples every point in the volume. In our case, it doesn't because
+% fspacing can be != 1 and we neglect the points around the edges.
 gridofhessians = cell(x0,y0,z0);
 for k = 1:numel(X)
-    center = [X(k),Y(k),Z(k)];
-    gridofhessians{center(1), center(2), center(3)} = tempgrid{k};
+    gridofhessians{X(k),Y(k),Z(k)} = tempgrid{k};
 end
-
 toc
 end
 
