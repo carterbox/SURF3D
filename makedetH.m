@@ -66,7 +66,7 @@ function [det] = weighteddet(H, filtersize, w)
 
 % Calculate the determinant using a weight factor.
 det = H(1)*H(2)*H(3)... % D11(D22)D33
-    - H(1)*(w*H(5))^2 - H(2)*(w*H(g))^2 - H(3)*(w*H(4))^2 ... D11(wD23)^2
+    - H(1)*(w*H(5))^2 - H(2)*(w*H(6))^2 - H(3)*(w*H(4))^2 ... D11(wD23)^2
     + 2*w^3*H(4)*H(5)*H(6); % 2(wD12)wD23(wD13)
 
 % Normalize the response by the size of the filter.
