@@ -13,34 +13,32 @@ function [detHgrid] = makedetH(J, filtersize)
 % NOTES
 % We take the absolute value of the det(H) because in three dimensions
 % saddle points can also be detected. [Knopp et al. "Hough Transforms and 3D
-% SURF for robust trhee dimenstional classification" pg. 4]
-% We were supposed to normalize the determinatnt of the approximate Hessian
-% we calculated by using a weight factor calculated from ratios of
-% Frobenius norms, but we didn't because that was complicated. Maybe later.
+% SURF for robust trhee dimenstional classification" pg. 4] We normalize
+% the determinant of the approximate Hessian by using a weight factor
+% calculated from ratios of Frobenius (Euclidian) norms.
 %% -----------------------------------------------------------------------
 
 % First, approximate the Hessian matricies for all calculatable points in
 % the volume.
 gridofhessians = surfhessian3D(J, filtersize);
 
-% Setup output cell. J is 1 larger than the original volume.
+% Setup output cell. J is 1 larger than its volume.
 [x,y,z] = size(J);
 x0 = x-1; y0 = y-1; z0 = z-1;
 detHgrid = zeros(x0,y0,z0,'double');
 
 parfor i = 1:numel(gridofhessians)
-    % Points near the edges were not calculated. Default value of detHgrid
-    % is already zero.
+    % Points where the filter overlaped the edges were not calculated.
+    % Default value of detHgrid is already zero.
     if(~isempty(gridofhessians{i}))
-        % Form the full Hessian matrix and calculate |det(H)|.
+        % Form the full Hessian matrix and calculate |weighted det(H)|.
         D = gridofhessians{i}
-        H = [D(1),D(4),D(6);...
-             D(4),D(2),D(5);...
-             D(6),D(5),D(3)];
-        detHgrid(i) = abs(weighteddet(H), filtersize, 0.7202);
+        %H = [D(1),D(4),D(6);...
+        %     D(4),D(2),D(5);...
+        %     D(6),D(5),D(3)];
+        detHgrid(i) = abs(weighteddet(D, filtersize, 0.7202));
     end
 end
-
 end
 
 %% Helper Functions
@@ -51,8 +49,8 @@ function [det] = weighteddet(H, filtersize, w)
 %   approximation of the gaussian.
 % 
 % INPUTS
-% H: the hessian matrix whose elements are in this order: D11, D22, D33,
-% D12, D23, D13.
+% H: the abbreviated hessian matrix in vector form whose elements are in
+% this order: D11, D22, D33, D12, D23, D13.
 % w: the weight factor was derived by comparing the cropped 3D gaussian with
 % the box filters by taking a ratio of the Euclidian norms.
 % filtersize: a scalar dimension denoting the side length of the box filter
@@ -62,8 +60,9 @@ function [det] = weighteddet(H, filtersize, w)
 % det: the weighted determinant of H.
 %
 % NOTES
-% See Bay et al. "Speeded Up Robust Features" page 4 for details about
+% See [Bay et al. "Speeded Up Robust Features" pg. 4] for details about
 % weighting the Hessian response.
+%% -----------------------------------------------------------------------
 
 % Calculate the determinant using a weight factor.
 det = H(1)*H(2)*H(3)... % D11(D22)D33
