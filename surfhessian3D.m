@@ -1,4 +1,4 @@
-function [gridofhessians] = surfhessian3D(J, filtersize)
+function [gridofhessians] = surfhessian2D(J, filtersize)
 % SURFHESSIAN3D approximates the hessian matrix by using box filters in 3D.
 % Returns a grid of hessians for each calculatable point in the volume.
 %
@@ -28,7 +28,6 @@ assert( mod(filtersize, 3) == 0 && filtersize >= 9 );
 x0 = x-1; y0 = y-1; z0 = z-1; 
 
 % Generate the boxpositions for each of the two types of filters.
-
 filters = makefilters(filtersize);
 
 % Generate a list of all the places to apply the filter.
@@ -38,7 +37,7 @@ buffer = (filtersize - 1)/2;
 [X,Y,Z] = ndgrid(1+buffer:fspacing:x0-buffer,...
                    1+buffer:fspacing:y0-buffer,...
                    1+buffer:fspacing:z0-buffer);
-tic
+               
 tempgrid = cell(numel(X),1);
 parfor k = 1:numel(X)
     center = [X(k),Y(k),Z(k)];
@@ -65,7 +64,6 @@ gridofhessians = cell(x0,y0,z0);
 for k = 1:numel(X)
     gridofhessians{X(k),Y(k),Z(k)} = tempgrid{k};
 end
-toc
 end
 
 %% Helper Functions

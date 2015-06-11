@@ -27,6 +27,7 @@ for i = 1:koctaves
     J = integralimage3D(padded_V);
     fprintf(1, '\nCalculating Hessians for scales...');
 for scale = octaves{i}
+    tic
     % Check to see if this scale has already been computed.
     if(length(R) < scale || isempty(R{scale}))
        fprintf(1, ' %i', scale);
@@ -41,6 +42,8 @@ for scale = octaves{i}
     else
        fprintf(1, ' X');
     end
+    toc
+    fprintf('\n');
 end
 fprintf(' DONE.');
 end
