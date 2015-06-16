@@ -13,7 +13,7 @@ function [maximums] = nonmaximumsupression(A, nbhood)
 % vectors and with their values in the last column.
 %
 % NOTES
-% http://en.wikipedia.org/wiki/Flip_clock
+% 
 %% -----------------------------------------------------------------------
 
 % Pad the array so that its dimensions are a multiples of 2n+1.
