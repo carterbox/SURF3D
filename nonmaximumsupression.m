@@ -1,7 +1,7 @@
 function [maximums] = nonmaximumsupression(A, nbhood)
 % NONMAXIMUMSUPRESSION takes a 4-dimensional array, A, and returns the
 % locations and the values of the local maximums within distance defined by
-% the vector NBHOOD.
+% the vector NBHOOD. #parallel
 %
 % INPUTS
 % A: The MxNxOxP dimensional array.
