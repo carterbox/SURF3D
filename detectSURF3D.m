@@ -6,7 +6,7 @@ function [points] = detectSURF3D(V)
 %
 % OUTPUTS
 % points: a Nx5 array of detected points. Each point is represented as a
-% row vector [x,y,z,scale,saliency].
+% row vector [x,y,z,e,saliency].
 %
 % NOTES
 % This work is an extension of the work by Bay, Herbert, et al. "Speeded-up
@@ -28,24 +28,24 @@ for i = 1:koctaves
     buffer = repmat((max(octaves{i})-1)/2,[1,3]);
     padded_V = padarray(V,buffer,'replicate','both');
     J = integralimage3D(padded_V);
-    fprintf(log, '\nCalculating Hessians for scales...');
-for scale = octaves{i}
-    % Check to see if this scale has already been computed.
-    filename = sprintf('Rscale%02i.mat',scale);
+    fprintf(log, '\nCalculating Hessians for filters...');
+for filter_size = octaves{i}
+    % Check to see if this filter size has already been computed.
+    filename = sprintf('./Rfilter%02i.mat',filter_size);
     if(exist(filename, 'file') > 0)
         fprintf(log, ' L');
         load(filename,'detH');
-        R{scale} = detH;
+        R{filter_size} = detH;
     else
-        if(length(R) < scale || isempty(R{scale}))
-           fprintf(log, ' %i', scale);
-           padded_detH = makedetH(J, scale);
+        if(length(R) < filter_size || isempty(R{filter_size}))
+           fprintf(log, ' %i', filter_size);
+           padded_detH = makedetH(J, filter_size);
            % Unpad the result.
            detH = padded_detH(1+buffer:end-buffer,...
                               1+buffer:end-buffer,...
                               1+buffer:end-buffer);
            save(filename,'detH');
-           R{scale} = detH;
+           R{filter_size} = detH;
         else
            fprintf(log, ' X');
         end

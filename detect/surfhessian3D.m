@@ -37,9 +37,10 @@ buffer = (filtersize - 1)/2;
 [X,Y,Z] = ndgrid(1+buffer:fspacing:x0-buffer,...
                    1+buffer:fspacing:y0-buffer,...
                    1+buffer:fspacing:z0-buffer);
-               
-tempgrid = cell(numel(X),1);
-parfor k = 1:numel(X)
+
+numpoints = numel(X);
+tempgrid = cell(numpoints,1);
+parfor k = 1:numpoints
     center = [X(k),Y(k),Z(k)];
     % Calculate each of the 6 terms of the Hessian.
     H = zeros(6,1);

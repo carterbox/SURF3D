@@ -27,7 +27,8 @@ gridofhessians = surfhessian3D(J, filtersize);
 x0 = x-1; y0 = y-1; z0 = z-1;
 detHgrid = zeros(x0,y0,z0,'double');
 
-parfor i = 1:numel(gridofhessians)
+numhessians = numel(gridofhessians);
+parfor i = 1:numhessians;
     % Points where the filter overlaped the edges were not calculated.
     % Default value of detHgrid is already zero.
     if(~isempty(gridofhessians{i}))

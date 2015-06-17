@@ -16,9 +16,9 @@ function [T] = sumintegralimage3D(corner,boxsize,J)
 %% -----------------------------------------------------------------------
 
 % Check for 3D vectors.
-assert(length(corner) == 3 && length(boxsize) == 3);
+%assert(length(corner) == 3 && length(boxsize) == 3);
 % Make sure the size of the area is not larger than J.
-assert(sum(sum(size(J) - boxsize)) >= 0);
+%assert(sum(sum(size(J) - boxsize)) >= 0);
 % Convert to row vectors.
 if(iscolumn(corner)), corner = corner'; end;
 if(iscolumn(boxsize)), boxsize = boxsize'; end;
