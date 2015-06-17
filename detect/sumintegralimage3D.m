@@ -23,22 +23,31 @@ function [T] = sumintegralimage3D(corner,boxsize,J)
 if(iscolumn(corner)), corner = corner'; end;
 if(iscolumn(boxsize)), boxsize = boxsize'; end;
 
-% Define the corners of the cube in the integral image.
-G = corner;
-A = G + boxsize;
-B = G + [0 1 1].*boxsize;
-C = G + [0 0 1].*boxsize;
-D = G + [1 0 1].*boxsize;
-E = G + [1 1 0].*boxsize;
-F = G + [0 1 0].*boxsize;
-H = G + [1 0 0].*boxsize;
+% % Define the corners of the cube in the integral image.
+% G = corner;
+% A = G + boxsize;
+% B = G + [0 1 1].*boxsize;
+% C = G + [0 0 1].*boxsize;
+% D = G + [1 0 1].*boxsize;
+% E = G + [1 1 0].*boxsize;
+% F = G + [0 1 0].*boxsize;
+% H = G + [1 0 0].*boxsize;
+% There are only 9 unique numbers in the assignments above, so we can save
+% computing time wasted on assignments by making just 1 additional vector 
+% instead of 8 vectors.
+Q = corner+boxsize;
 
 % Add and subtract the corners according to this idea on Wikipedia
 % http://en.wikipedia.org/wiki/Summed_area_table but extrapolated to 3D
 % T = A - E - D - B + C + H + F - G
-T = J(A(1),A(2),A(3))...
-    - J(E(1),E(2),E(3)) - J(D(1),D(2),D(3)) - J(B(1),B(2),B(3))...
-    + J(C(1),C(2),C(3)) + J(H(1),H(2),H(3)) + J(F(1),F(2),F(3))...
-    - J(G(1),G(2),G(3));
+% T = J(A(1),A(2),A(3))...
+%     - J(E(1),E(2),E(3)) - J(D(1),D(2),D(3)) - J(B(1),B(2),B(3))...
+%     + J(C(1),C(2),C(3)) + J(H(1),H(2),H(3)) + J(F(1),F(2),F(3))...
+%     - J(G(1),G(2),G(3));
+T = J(Q(1),Q(2),Q(3))...
+    - J(Q(1),Q(2),corner(3)) - J(Q(1),corner(2),Q(3))...
+    - J(corner(1),Q(2),Q(3)) + J(corner(1),corner(2),Q(3))...
+    + J(Q(1),corner(2),corner(3)) + J(corner(1),Q(2),corner(3))...
+    - J(corner(1),corner(2),corner(3));
 
 end
