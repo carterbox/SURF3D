@@ -1,14 +1,14 @@
 function [detHgrid] = makedetH(J, filtersize)
-% MAKEDETH takes an integral image and returns and array of the
-%   absolute values of the determinants of the Hessian at each calculatable
-%   point for the filtersize.
+%MAKEDETH takes an integral image and returns and array of the absolute
+% values of the determinants of the Hessian at each calculatable point for
+% the filtersize. #parallel #parallelchild
 %
 % INPUTS
-% J: the integral image of some volume.
+% J (dougle): the integral image of some volume.
 % filtersize: the size of the filter used to approximate H.
 %
 % OUTPUTS
-% detHgrid: the array of |det(H)|.
+% detHgrid (single): the array of |det(H)|.
 %
 % NOTES
 % We take the absolute value of the det(H) because in three dimensions
@@ -20,14 +20,13 @@ function [detHgrid] = makedetH(J, filtersize)
 
 % First, approximate the Hessian matricies for all calculatable points in
 % the volume.
-gridofhessians = surfhessian3D(J, filtersize);
+gridofhessians = surfhessian3D(J, filtersize); % parallel
 
 % Setup output cell. J is 1 larger than its volume.
 [x,y,z] = size(J);
-x0 = x-1; y0 = y-1; z0 = z-1;
-detHgrid = zeros(x0,y0,z0,'double');
+detHgrid(x-1,y-1,z-1) = single(0);
 
-numhessians = numel(gridofhessians);
+numhessians = uint32(numel(gridofhessians));
 parfor i = 1:numhessians;
     % Points where the filter overlaped the edges were not calculated.
     % Default value of detHgrid is already zero.

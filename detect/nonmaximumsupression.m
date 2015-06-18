@@ -5,7 +5,7 @@ function [maximums] = nonmaximumsupression(A, nbhood)
 %
 % INPUTS
 % A: The MxNxOxP dimensional array.
-% neighborhood: a vector [n1,n2,n3,n4] that defines the minimum spacing
+% neighborhood: a col vector [n1;n2;n3;n4] that defines the minimum spacing
 % between local maxima. Analagous to the radius not the diameter.
 %
 % OUTPUTS
@@ -20,17 +20,17 @@ function [maximums] = nonmaximumsupression(A, nbhood)
 % TODO: throw a warning instead of asserting and pad neighborhood with 1s.
 assert(ndims(A) == length(nbhood),...
     'The dimensions of NBHOOD does not match A.');
-if(iscolumn(nbhood)), nbhood = nbhood'; end;
-arraysize0  = size(A);
+if(isrow(nbhood)), nbhood = nbhood'; end;
+arraysize0  = size(A)';
 remainders = rem(arraysize0,2.*nbhood+1);
-A = padarray(A,2.*nbhood+1-remainders,'post'); % Post pad to avoid reindexing at the end.
-arraysize = size(A);
+A = padarray(A,double(2.*nbhood+1-remainders),'post'); % Post pad to avoid reindexing at the end.
+arraysize = size(A)';
 assert(sum(rem(arraysize,2.*nbhood+1)) == 0);
 
 % Generate the indicies of the points spaced at 2n+1 along the dimensions
 % of the volume.
 p = cell(ndims(A),1);
-for i = 1:ndims(A);
+for i = uint8(1:ndims(A));
     p{i} = 1+nbhood(i):2*nbhood(i)+1:arraysize(i);
 end
 
@@ -73,19 +73,20 @@ pmax_list = zeros(size(X,1),size(X,2)+1);
 
 % Carve out the region around the points in X and find the max in each.
 % Record its location and magnitude.
-parfor k = 1:size(X,1)
+numnbhoods = uint32(size(X,1));
+for k = 1:numnbhoods
     range = cell(size(X,2),1);
     for i = 1:size(X,2)
        range{i} = (X(k,i) - nbhood(i)):(X(k,i) + nbhood(i));
     end
     thisregion = A(range{1},range{2},range{3},range{4});
     
-    index = zeros(1,4);
+    index = zeros(4,1);
     [magnitude, index(1)] = max(thisregion(:));
     [index(1),index(2),index(3),index(4)] = ind2sub(size(thisregion),index(1));
-    index = X(k,:) + index - nbhood - 1;
+    index = X(k,:)' - nbhood - 1 + index;
     
-    pmax_list(k,:) = [index, magnitude];
+    pmax_list(k,:) = [index', magnitude];
 end
 
 end
@@ -113,20 +114,22 @@ radius = 2*mean(nbhood)+1;
 matches = rangesearch(tree, pmax_list(:,1:4),radius);
 
 % Remove points with matches that are larger.
+num_pmax = uint32(size(pmax_list,1));
 pmax_mags = pmax_list(:,5);
-is_peak = ones(size(pmax_list,1),1);
-parfor i = 1:size(pmax_list,1)
+is_peak = true(num_pmax,1);
+parfor i = 1:num_pmax
    % Compare each point with it's matches. No matches have length 0, and we
    % don't want peaks at zero.
    if(pmax_mags(i) == 0)
-       is_peak(i) = 0;
-   else for j = 1:length(matches{i})
+       is_peak(i) = false;
+   else
+       for j = 1:length(matches{i})
            % Mark the point if you find a match with a higher value.
            if(pmax_mags(i) < pmax_mags(matches{i}(j)))
-               is_peak(i) = 0;
+               is_peak(i) = false;
                break;
            end
-        end
+       end
    end
 end
 
@@ -134,7 +137,7 @@ end
 num_peaks = sum(is_peak);
 pmax_list(:,5) = pmax_list(:,5).*is_peak;
 pmax_list = sortrows(pmax_list, -5);
-maximums = pmax_list(1:num_peaks,:,:,:,:);
+maximums = pmax_list(1:num_peaks,:);
 end
 
 function [X] = generategrid(p)
