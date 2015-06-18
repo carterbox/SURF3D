@@ -8,22 +8,21 @@ function [J] = integralimage3D(V)
 % V: the volume.
 %
 % OUTPUT
-% J: the integral image of V.
+% J (double): the integral image of V.
 %
 % NOTES
 % http://en.wikipedia.org/wiki/Summed_area_table
-%% -----------------------------------------------------------------------
-
 % We need the extra bit depth for large volumes.
 % Example: 128*1024^3 ~ 1.3x10^11 > 2^32
 % Also, Matlab processes double faster than int64.
-V = double(V);
+%% -----------------------------------------------------------------------
 
 % Pad the integral image with zeros to make the loop simpler (There's no
 % need for special cases at the edges). Make the default value -1 for
 % troubleshooting purposes.
 [x0,y0,z0] = size(V);
-J = padarray(-ones(x0,y0,z0, 'double'), [1,1,1], 'pre');
+%J = padarray(-ones(x0,y0,z0, 'double'), [1,1,1], 'pre');
+J(x0+1,y0+1,z0+1) = double(0);
 
 for i = 2:x0+1
 for j = 2:y0+1
