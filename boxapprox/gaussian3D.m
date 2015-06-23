@@ -1,36 +1,49 @@
-function [g] = gaussian3D(size, varargin) 
+function [g] = gaussian3D(fsize, varargin) 
 % GAUSSIAN3D creates a discretized and cropped 3D gaussian centered on a
-% square grid with side length SIZE.
-% gaussian3D(size)
-% gaussian3D(size, sigma)
-% gaussian3D(size, derivative)
+% square grid with side length FSIZE.
+% gaussian3D(fsize)
+% gaussian3D(fsize, sigma)
+% gaussian3D(fsize, sigma, derivative)
+%
+% INPUTS
+% fsize: scalar side length of the cropped gaussian filter. 
+% sigma: the standard deviation of the gaussian.
+% derivative: choosing 11 or 12 for this option returns either second
+% partial derivative of the guassian instead of the non-differentiated
+% gaussian.
+%
+% OUTPUTS
+% g (single): a 3D matrix with the requested filter.
+%
+% NOTES
+% The filter is normalized so the elements sum to 1.
+% https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 %% -----------------------------------------------------------------------
 % Set default values for optional inputs.
 sigma0 = 1.2; derivative0 = 0; 
 
 % Set input requirements.
 p = inputParser;
-addRequired(p,'size', @isnumeric);
+addRequired(p,'fsize', @isnumeric);
 addOptional(p,'sigma', sigma0, @isnumeric);
 addOptional(p,'derivative', derivative0, @isnumeric);
 
 % Assign values.
-parse(p,size,varargin{:});
-size  = p.Results.size;
-sigma = p.Results.sigma;
+parse(p,fsize,varargin{:});
+fsize  = single(p.Results.fsize);
+sigma = single(p.Results.sigma);
 derivative  = p.Results.derivative;
 %% -----------------------------------------------------------------------
 
 % Generate a list of points to evaluate the gaussian.
-l0 = (size - 1)/2;
+l0 = (fsize - 1)/2;
 [X,Y,Z] = meshgrid(-l0:l0,-l0:l0,-l0:l0);
 
 % Calculate values at each of the points.
 g = gaussianhelper(X,Y,Z, sigma, derivative);
 
-% Normalize the gaussian by the smallest and largest number
-%big = max(max(max(g))); small = min(min(min(g)));
-%g = (g - small)/(big-small);
+% Normalize the filter to a volume of 1
+g = g/sum(g(:));
 
 end
 
@@ -49,5 +62,5 @@ switch derivative
         %t = sqrt(2).*x.*y.*exp(-(x.^2+y.^2+z.^2)/sigma.^2)./(pi.^(3/2)*sigma.^7);
         t = (4.*x.*y./sigma.^4).*exp(-(x.^2+y.^2+z.^2)/sigma.^2);
 end
-% t = 2.8284.*t; % Normalizes area to 1 for sigma = 1.2
+
 end
