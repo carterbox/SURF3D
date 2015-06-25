@@ -79,7 +79,7 @@ function [boxpositions] = makefilters(filter_size)
 % filter_size: the scalar length of the sizes of the cubic filter
 %
 % OUTPUT
-% int32 boxpositions: a cell of box filters. Each 7xB filter is in a cell
+% boxpositions (int32): a cell of box filters. Each 7xB filter is in a cell
 % and each box is represented as a column vector: [multiplier; corner; size].
 % ------------------------------------------------------------------------
 
