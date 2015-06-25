@@ -34,8 +34,8 @@ parfor i = 1:numpeaks
     Y = squeeze(A(coords(i,1),coords(i,2),coords(i,3),:));
     % Interpolate the between filter sizes to find the estimated maximum
     % response.
-    fitted_curve = interpn(X,Y,query_grid,'cubic');
-    %if(rem(500,i) == 0), figure, plot(X,Y,'o',query_grid,fitted_curve,'-'); end
+    fitted_curve = interpn(X,Y,query_grid,'spline');
+    if(rem(500,i) == 0), figure, plot(X,Y,'o',query_grid,fitted_curve,'-'); end
     
     % Save the results to the output variable.
     [a_max,a_index] = max(fitted_curve);

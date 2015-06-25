@@ -1,4 +1,4 @@
-function [points] = detectSURF3D(V)
+function [points,scale,saliency] = detectSURF3D(V)
 % DETECTSURF3D detects SURF points in a volume. #parallelchild
 %
 % INPUTS
@@ -18,6 +18,7 @@ function [points] = detectSURF3D(V)
 log = 1; % 1 is the default terminal.
 koctaves = uint8(1); nbhood = [3;3;3;3];
 octaves = {[9,15,21,27]};
+scales = {[1.2,1.6,2.1,2.3]};
 %[27,33,39,45],[39,51,63,75],[27,51,75,99],[51,99,147,195]};
 
 %% Calculate the responses from the Hessian based detector
@@ -77,7 +78,7 @@ for i = 1:koctaves
     
     % Interpolate responses in scale space in order to find response maxima.
     fprintf(log, ' refining peaks... ');
-    maxima{i} = refinepeaks(maxima{i},A,4,octaves{i});
+    maxima{i} = refinepeaks(maxima{i},A,4,scales{i});
     
     fprintf(' DONE.');
 end
@@ -86,6 +87,10 @@ end
 points = maxima{1};
 for i = 2:length(maxima), points = cat(1,points,maxima{i}); end
 points = sortrows(points, -5); % reponse magnitude is col 5.
+
+scale = points(:,4);
+saliency = points(:,5);
+points = points(:,1:3);
 
 fprintf(log,'\nSUCCCESS\n');
 

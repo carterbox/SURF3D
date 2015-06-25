@@ -18,15 +18,15 @@ assert(mod(filtersize,2) == 0);
 l0 = filtersize/2;
 
 boxpositions = cell(3,1);
-for i = 0:2
+parfor i = 0:2
     % Define the volumes for the wavelet
     box0 = circshift([-l0;-l0;-l0],i,1);
     box1 = circshift([  0;-l0;-l0],i,1);
     boxsize = circshift([l0;filtersize;filtersize],i,1);
     
     % Save it to the output
-    boxpositions{i+1} = {-1,        1;          % multiplier
+    boxpositions{i+1} = [-1,        1;          % multiplier
                           box0,     box1;       % corner
-                          boxsize,  boxsize};   % size
+                          boxsize,  boxsize];   % size
 end
 end
