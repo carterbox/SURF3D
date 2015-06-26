@@ -5,8 +5,11 @@ function [points,scale,saliency] = detectSURF3D(V)
 % V: the input volume.
 %
 % OUTPUTS
-% points: a Nx5 array of detected points. Each point is represented as a
-% row vector [x,y,z,scale,saliency].
+% points (int: a Nx3 array of detected points. Each point is represented as a
+% row vector [x,y,z].
+% scale: the scale of each feature.
+% sign: the sign of the laplacian.
+% saliency: the response of the detector to the stuff.
 %
 % NOTES
 % This work is an extension of the work by Bay, Herbert, et al. "Speeded-up
@@ -18,10 +21,10 @@ function [points,scale,saliency] = detectSURF3D(V)
 log = 1; % 1 is the default terminal.
 koctaves = uint8(1); nbhood = [3;3;3;3];
 octaves = {[9,15,21,27]};
-scales = {[1.2,1.6,2.1,2.3]};
+scales = {[1.2,1.6,2.1,2.3]}; % TODO: Figure out the actual corresponding scales.
 %[27,33,39,45],[39,51,63,75],[27,51,75,99],[51,99,147,195]};
 
-%% Calculate the responses from the Hessian based detector
+%% Calculate the responses from the Hessian based detector.
 R = cell(27,1); % Store the results in cell R.
 for i = 1:koctaves
     % Pad the array for the largest filter in the octave.
@@ -68,6 +71,7 @@ for i = 1:koctaves
     fprintf(log, '\n%i nb:[%i,%i,%i,%i]', i, nbhood);
 
     % Concat all the detector responses from the octave.
+    % WARNING: Causes large spike in memory usage.
     s0 = length(octaves{i});
     A(x0,y0,z0,s0) = single(0); 
     for j = 1:s0

@@ -1,6 +1,6 @@
 function [] = grabkeypoints( V0, points, outdir )
 %GRABKEYPOINTS cuts subvolumes out of V0 around the POINTS and saves them
-%   to a directory outdir/cuts/000001. #parallel
+%   to a directory OUTDIR/p000001/00001.png. #parallel
 %
 % INPUTS
 % V0: an uint8 greyscale 3 dimensional array.
@@ -30,7 +30,7 @@ parfor i = 1:size(points,1)
     
     % Save the volume to a named directory.
     folder = sprintf('/p%05i',i);    
-    imstacksave(subvol,[outdir '/cuts' folder],'');
+    imstacksave(subvol,[outdir folder],'');
 
 end
 end

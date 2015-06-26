@@ -1,7 +1,7 @@
 function [peaks] = refinepeaks(peaks, A, ~, scale)
 % REFINEPEAKS takes the coarse location of PEAKS in A and uses quadratic
 % fitting function in order to approximate the true location of the peak
-% along dimension D.
+% along dimension D. #parallel
 %
 % INPUT
 % peaks: the Mx5 array of peaks from A. Where each peak is the following
@@ -35,7 +35,7 @@ parfor i = 1:numpeaks
     % Interpolate the between filter sizes to find the estimated maximum
     % response.
     fitted_curve = interpn(X,Y,query_grid,'spline');
-    if(rem(500,i) == 0), figure, plot(X,Y,'o',query_grid,fitted_curve,'-'); end
+    if(rem(1000,i) == 0), figure, plot(X,Y,'o',query_grid,fitted_curve,'-'); end
     
     % Save the results to the output variable.
     [a_max,a_index] = max(fitted_curve);
