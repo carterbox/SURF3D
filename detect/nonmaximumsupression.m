@@ -137,7 +137,8 @@ end
 num_peaks = sum(is_peak);
 pmax_list(:,5) = pmax_list(:,5).*is_peak;
 pmax_list = sortrows(pmax_list, -5);
-maximums = pmax_list(1:num_peaks,:);
+maximums(num_peaks,6) = single(0);
+maximums(:,1:5) = pmax_list(1:num_peaks,1:5);
 end
 
 function [X] = generategrid(p)

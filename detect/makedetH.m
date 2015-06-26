@@ -1,4 +1,4 @@
-function [detHgrid] = makedetH(J, filtersize)
+function [detHgrid, signgrid] = makedetH(J, filtersize)
 %MAKEDETH takes an integral image and returns and array of the absolute
 % values of the determinants of the Hessian at each calculatable point for
 % the filtersize. #parallel #parallelchild
@@ -9,6 +9,8 @@ function [detHgrid] = makedetH(J, filtersize)
 %
 % OUTPUTS
 % detHgrid (single): the array of |det(H)|.
+% signgrid (int8): the array of the sign of the Laplacian AKA tr(H). Only 3
+% values possible -1 0 1.
 %
 % NOTES
 % We take the absolute value of the det(H) because in three dimensions
@@ -25,6 +27,7 @@ gridofhessians = surfhessian3D(J, filtersize); % parallel
 % Setup output cell. J is 1 larger than its volume.
 [x,y,z] = size(J);
 detHgrid(x-1,y-1,z-1) = single(0);
+signgrid(x-1,y-1,z-1) = int8(0);
 
 numhessians = uint32(numel(gridofhessians));
 parfor i = 1:numhessians;
@@ -37,6 +40,7 @@ parfor i = 1:numhessians;
         %     D(4),D(2),D(5);...
         %     D(6),D(5),D(3)];
         detHgrid(i) = abs(weighteddet(D, filtersize, 0.7202));
+        signgrid(i) = sign(prod(D(1:3)));
     end
 end
 end
