@@ -20,7 +20,7 @@ koctaves = uint8(1); nbhood = [3;3;3;3];
 octaves = {[9,15,21,27]};
 scales = {[1.2,1.6,2.1,2.3]};
 %[27,33,39,45],[39,51,63,75],[27,51,75,99],[51,99,147,195]};
-threshold = 10000;
+threshold = 1000;
 
 %% Calculate the responses from the Hessian based detector
 R = cell(27,1); S = cell(27,1); % Store the results in cell R.

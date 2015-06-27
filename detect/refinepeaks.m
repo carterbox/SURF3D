@@ -35,7 +35,7 @@ parfor i = 1:numpeaks
     % Interpolate the between filter sizes to find the estimated maximum
     % response.
     fitted_curve = interpn(X,Y,query_grid,'spline');
-    if(rem(500,i) == 0), figure, plot(X,Y,'o',query_grid,fitted_curve,'-'); end
+    %if(rem(500,i) == 0), figure, plot(X,Y,'o',query_grid,fitted_curve,'-'); end
     
     % Save the results to the output variable.
     [a_max,a_index] = max(fitted_curve);
