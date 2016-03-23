@@ -1,13 +1,12 @@
 function [ output_args ] = assignorientation( V, point )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%ASSIGNORIENTATION assigns the orientation to each of the points in the volume V.
 %
 % INPUTS
 % point Nx4 row vectors [x,y,z,scale]
-
+%
 %% -----------------------------------------------------------------------
 
-
+% METHOD STUB!
 
 % calculate Haar wavelet responses in the x y and z directions in a radius
 % of 6s with a sample spacing of s
