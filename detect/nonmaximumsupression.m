@@ -74,7 +74,7 @@ pmax_list = zeros(size(X,1),size(X,2)+1);
 % Carve out the region around the points in X and find the max in each.
 % Record its location and magnitude.
 numnbhoods = uint32(size(X,1));
-for k = 1:numnbhoods
+parfor k = 1:numnbhoods
     range = cell(size(X,2),1);
     for i = 1:size(X,2)
        range{i} = (X(k,i) - nbhood(i)):(X(k,i) + nbhood(i));

@@ -34,7 +34,7 @@ filters = makefilters(filtersize);
 
 % Generate a list of all the places to apply the filter.
 % Ignore points around the edges where the filter will give bad results.
-fspacing = int32(2);
+fspacing = int32(1);
 buffer = int32((filtersize - 1)/2);
 [X,Y,Z] = ndgrid(1+buffer:fspacing:x0-buffer,...
                  1+buffer:fspacing:y0-buffer,...

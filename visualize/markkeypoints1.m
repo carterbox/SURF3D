@@ -1,5 +1,6 @@
 function [color] = markkeypoints1( V0, points, outdir )
-% MARKKEYPOINTS1 marks the POINTS with blue dots in the volume V0.
+% MARKKEYPOINTS1 marks the POINTS with blue dots in the volume V0. Saves
+% the new volume stack to OUTDIR/markedfeatures0001.png. #parallel
 %
 % INPUTS
 % V0: an uint8 greyscale 3 dimensional array.

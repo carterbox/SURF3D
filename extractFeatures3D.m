@@ -20,7 +20,7 @@ function [descriptors, isvalid] = extractFeatures3D(V,points,scale)
 % (2008): 346-359.
 %
 %% -----------------------------------------------------------------------
-
+log = 1;
 if(size(points,2) ~= 3), error('Points not 3 dimensional'), end;
 if(ndims(V) ~= 3), error('Volume not 3 dimensional'), end;
 scale = round(scale,2);
@@ -29,16 +29,17 @@ points = int16(points);
 kNUMPOINTS = int32(size(points,1));
 isvalid = true(kNUMPOINTS,1);
 
-% Grab oriented subvolumes around each point.
+fprintf(log,'\nGrabbing oriented subvolumes...');
 [region,filters,ranges,hashtable,isvalid] = ...
                                     grabregions(V,points,scale,isvalid,20);
+fprintf(log,' GRABBED.');
 
 % Calculate the number of subregions and length of descriptor.
 kSPLIT = int16([3,3,3]); % Change this line for SURF-384.
 kNUMSUBREGIONS = prod(kSPLIT,'native');
 kDESCRIPTORLENGTH = 6*kNUMSUBREGIONS;
 
-% Generate the descriptors for each point with a valid region.
+fprintf(log,'\nGenerating descriptors...');
 descriptors(kDESCRIPTORLENGTH,kNUMPOINTS) = single(0);
 parfor j = 1:kNUMPOINTS
 if(isvalid(j)) 
@@ -66,6 +67,7 @@ if(isvalid(j))
     descriptors(:,j) = computeSURFsums(subregion, subfilter, kNUMSUBREGIONS, kDESCRIPTORLENGTH, wavelets, X,Y,Z);
 end
 end
+fprintf(log,' COMPLETE.');
 
 % Flip the output to the desired orientation.
 descriptors = descriptors';

@@ -41,7 +41,7 @@ parfor i = 1:kNUMPOINTS
     if isvalid(i)
     % See if the rotated region intersects the edge of the volume.
     if(sum(1 > (points(i,:) - kRADIUS(i,:)),2) > 0 || sum([x,y,z] < (points(i,:) + kRADIUS(i,:)),2) > 0)
-        fprintf(1,'\nREGION %i OUT OF BOUNDS.', i);
+        %fprintf(1,'\nREGION %i OUT OF BOUNDS.', i);
         isvalid(i) = false;
     else
         % Calculate the corners of the rotated region in V space.
@@ -83,7 +83,7 @@ for i = 1:kTABLESIZE
     % Decide where to sample each subregion for this scale.
     range = zeros(1,5,'uint8'); % integer operations
     range(3) = subregionsize(i)/2 + 1;
-    range(5) = subregionsize(i) - (uniquevalues(i));
+    range(5) = subregionsize(i) - int16(uniquevalues(i));
     range(1) = 1 + (uniquevalues(i));
     range(2) = mean([range(1),range(3)]);
     range(4) = mean([range(3),range(5)]);
